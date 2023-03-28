@@ -1,4 +1,5 @@
 import React from "react";
+import { toast } from "react-hot-toast";
 import { type NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
@@ -7,7 +8,7 @@ import { SignInButton, useUser } from "@clerk/nextjs";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
-import { LoadingPage } from "~/components/Loading";
+import { LoadingPage, LoadingSpinner } from "~/components/Loading";
 import { api, type RouterOutputs } from "~/utils/api";
 
 dayjs.extend(relativeTime);
@@ -19,17 +20,26 @@ function CreatePostWizard() {
   const [input, setInput] = React.useState("");
   const { user } = useUser();
   const ctx = api.useContext();
+
   const { mutate, isLoading: isPosting } = api.posts.create.useMutation({
     onSuccess: () => {
       setInput("");
       void ctx.posts.getAll.invalidate();
+    },
+    onError: (err) => {
+      const errMsg = err.data?.zodError?.fieldErrors?.content;
+      if (errMsg && errMsg[0]) {
+        toast.error(errMsg[0]);
+        return;
+      }
+      toast.error("Failed to post! Please try again.");
     },
   });
 
   if (!user) return null;
 
   return (
-    <div className="flex w-full gap-x-3">
+    <div className="flex w-full items-center gap-x-3">
       <Image
         src={user.profileImageUrl}
         alt={`${user.username || "User"}'s profile image`}
@@ -43,9 +53,20 @@ function CreatePostWizard() {
         className="grow bg-transparent outline-none"
         value={input}
         onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !!input) {
+            e.preventDefault();
+            mutate({ content: input });
+          }
+        }}
         disabled={isPosting}
       />
-      <button onClick={() => mutate({ content: input })}>Post</button>
+      {!!input && !isPosting && (
+        <button onClick={() => mutate({ content: input })} disabled={isPosting}>
+          Post
+        </button>
+      )}
+      {isPosting && <LoadingSpinner size={20} />}
     </div>
   );
 }
