@@ -1,3 +1,4 @@
+import React from "react";
 import { type NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
@@ -6,8 +7,7 @@ import { SignInButton, useUser } from "@clerk/nextjs";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
-import { LoadingPage, LoadingSpinner } from "~/components/Loading";
-// import Link from "next/link";
+import { LoadingPage } from "~/components/Loading";
 import { api, type RouterOutputs } from "~/utils/api";
 
 dayjs.extend(relativeTime);
@@ -16,7 +16,15 @@ dayjs.extend(relativeTime);
 //*             CREATE POST WIZARD              =
 //*==============================================
 function CreatePostWizard() {
+  const [input, setInput] = React.useState("");
   const { user } = useUser();
+  const ctx = api.useContext();
+  const { mutate, isLoading: isPosting } = api.posts.create.useMutation({
+    onSuccess: () => {
+      setInput("");
+      void ctx.posts.getAll.invalidate();
+    },
+  });
 
   if (!user) return null;
 
@@ -33,7 +41,11 @@ function CreatePostWizard() {
         type="text"
         placeholder="Type some emojis"
         className="grow bg-transparent outline-none"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        disabled={isPosting}
       />
+      <button onClick={() => mutate({ content: input })}>Post</button>
     </div>
   );
 }
@@ -61,7 +73,7 @@ export function PostView({ author, post }: PostViewProps) {
           <span>@{author.username}</span> <span>·</span>{" "}
           <span>{dayjs(post.createdAt).fromNow()}</span>
         </p>
-        <span>{post.content}</span>
+        <span className="text-2xl">{post.content}</span>
       </div>
     </div>
   );
@@ -75,9 +87,11 @@ function PostsFeed() {
 
   if (isLoading) return <LoadingPage />;
 
+  if (!data) return <div>Something went wrong!</div>;
+
   return (
     <div className="flex flex-col">
-      {data?.map(({ post, author }) => (
+      {data.map(({ post, author }) => (
         <PostView key={post.id} post={post} author={author} />
       ))}
     </div>
