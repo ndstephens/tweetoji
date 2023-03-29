@@ -3,6 +3,7 @@ import {
   type InferGetServerSidePropsType,
 } from "next";
 import Head from "next/head";
+import Image from "next/image";
 
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import SuperJSON from "superjson";
@@ -27,7 +28,19 @@ export default function ProfilePage({
         <title>{data.username}</title>
       </Head>
       <PageLayout>
-        <div>{data.username}</div>
+        <div className="relative h-40 bg-slate-600">
+          <Image
+            src={data.profileImageUrl}
+            alt={`Profile image of ${data.username || "user"}`}
+            width={128}
+            height={128}
+            className="absolute bottom-0 left-0 -mb-16 ml-4 rounded-full border-4 border-black bg-black"
+          />
+        </div>
+        <div className="h-16" />
+        <div className="border-b border-slate-400 p-4">
+          <p className="text-2xl font-bold">@{data.username}</p>
+        </div>
       </PageLayout>
     </>
   );
