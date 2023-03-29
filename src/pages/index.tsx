@@ -3,6 +3,7 @@ import { toast } from "react-hot-toast";
 import { type NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 
 import { SignInButton, useUser } from "@clerk/nextjs";
 import dayjs from "dayjs";
@@ -90,9 +91,13 @@ export function PostView({ author, post }: PostViewProps) {
         height={56}
       />
       <div className="flex flex-col">
-        <p className="text-slate-300">
-          <span>@{author.username}</span> <span>·</span>{" "}
-          <span>{dayjs(post.createdAt).fromNow()}</span>
+        <p className="text-slate-400">
+          <Link href={`/@${author.username}`}>
+            <span className="text-slate-50">@{author.username}</span>
+          </Link>{" "}
+          <Link href={`/post/${post.id}`}>
+            <span>·</span> <span>{dayjs(post.createdAt).fromNow()}</span>
+          </Link>
         </p>
         <span className="text-2xl">{post.content}</span>
       </div>
