@@ -9,10 +9,31 @@ import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import SuperJSON from "superjson";
 
 import PageLayout from "~/components/layout";
+import { LoadingPage } from "~/components/Loading";
+import { PostView } from "~/components/postView";
 import { appRouter } from "~/server/api/root";
 import { prisma } from "~/server/db";
 import { api } from "~/utils/api";
 
+function ProfileFeed({ userId }: { userId: string }) {
+  const { data, isLoading } = api.posts.getPostsByUserId.useQuery({ userId });
+
+  if (isLoading) return <LoadingPage />;
+
+  if (!data || data.length === 0) return <div>User has not posted yet</div>;
+
+  return (
+    <div className="flex flex-col">
+      {data.map(({ post, author }) => (
+        <PostView key={post.id} post={post} author={author} />
+      ))}
+    </div>
+  );
+}
+
+//* =============================================
+//*               PROFILE PAGE                  =
+//*==============================================
 export default function ProfilePage({
   username,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
@@ -41,6 +62,7 @@ export default function ProfilePage({
         <div className="border-b border-slate-400 p-4">
           <p className="text-2xl font-bold">@{data.username}</p>
         </div>
+        <ProfileFeed userId={data.id} />
       </PageLayout>
     </>
   );
