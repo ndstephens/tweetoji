@@ -7,6 +7,7 @@ import Head from "next/head";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import SuperJSON from "superjson";
 
+import PageLayout from "~/components/layout";
 import { appRouter } from "~/server/api/root";
 import { prisma } from "~/server/db";
 import { api } from "~/utils/api";
@@ -25,9 +26,9 @@ export default function ProfilePage({
       <Head>
         <title>{data.username}</title>
       </Head>
-      <main className="flex h-screen w-full justify-center">
+      <PageLayout>
         <div>{data.username}</div>
-      </main>
+      </PageLayout>
     </>
   );
 }
