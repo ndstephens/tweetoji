@@ -4,6 +4,10 @@ on: [push, pull_request]
 
 env:
   DATABASE_URL: "https://fake.com"
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "string"
+  CLERK_SECRET_KEY: "string"
+  UPSTASH_REDIS_REST_URL: "https://fake.com"
+  UPSTASH_REDIS_REST_TOKEN: "string"
 
 jobs:
   build:
