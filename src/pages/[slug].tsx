@@ -5,14 +5,10 @@ import {
 import Head from "next/head";
 import Image from "next/image";
 
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import SuperJSON from "superjson";
-
 import PageLayout from "~/components/layout";
 import { LoadingPage } from "~/components/Loading";
 import { PostView } from "~/components/postView";
-import { appRouter } from "~/server/api/root";
-import { prisma } from "~/server/db";
+import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
 
 function ProfileFeed({ userId }: { userId: string }) {
@@ -71,18 +67,13 @@ export default function ProfilePage({
 export async function getServerSideProps(
   context: GetServerSidePropsContext<{ slug: string }>
 ) {
-  const ssg = createProxySSGHelpers({
-    router: appRouter,
-    ctx: { prisma, userId: null },
-    transformer: SuperJSON,
-  });
+  const ssg = generateSSGHelper();
 
-  const slug = context.params?.slug as string;
+  const slug = context.params?.slug;
   if (typeof slug !== "string") throw new Error("Invalid slug");
   const username = slug.replace("@", "");
 
   /*
-   * Prefetching the `post.byId` query here.
    * `prefetch` does not return the result and never throws - if you need that behavior, use `fetch` instead.
    */
   await ssg.profile.getUserByUsername.prefetch({ username });
